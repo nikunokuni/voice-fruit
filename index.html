@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎤 くだものキャッチゲーム</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@700&family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a0a2e;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 60%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 25%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 40%, #fff 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 90%, #fff 0%, transparent 100%),
+      radial-gradient(2px 2px at 90% 10%, #ffeb99 0%, transparent 100%),
+      radial-gradient(2px 2px at 45% 70%, #ffeb99 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #ui-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: rgba(10,5,30,0.8);
+    backdrop-filter: blur(8px);
+    border-bottom: 2px solid rgba(255,200,100,0.3);
+    z-index: 100;
+  }
+
+  #score-display {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 28px;
+    color: #ffd700;
+    text-shadow: 0 0 20px #ffa500;
+    letter-spacing: 2px;
+  }
+  #lives-display { font-size: 26px; letter-spacing: 4px; }
+  #timer-display { font-size: 16px; color: #aaa; font-weight: 700; }
+
+  #game-canvas-wrapper {
+    position: relative;
+    width: 420px;
+    height: 480px;
+    margin-top: 60px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 3px solid rgba(255,200,100,0.4);
+    box-shadow: 0 0 60px rgba(255,150,50,0.2), inset 0 0 40px rgba(0,0,0,0.5);
+    z-index: 10;
+  }
+  #game-canvas { width: 100%; height: 100%; display: block; }
+
+  #voice-panel {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10,5,30,0.85);
+    backdrop-filter: blur(8px);
+    border-top: 2px solid rgba(255,200,100,0.3);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 100;
+  }
+
+  #mic-btn {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    border: 3px solid #ff6b6b;
+    background: rgba(255,80,80,0.15);
+    cursor: pointer;
+    font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  #mic-btn.listening {
+    background: rgba(255,80,80,0.4);
+    border-color: #ff3030;
+    box-shadow: 0 0 20px #ff3030;
+    animation: pulse-mic 1s infinite;
+  }
+  @keyframes pulse-mic {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  #voice-log { flex: 1; font-size: 14px; color: #ccc; min-height: 20px; }
+  #voice-log span { color: #ffd700; font-weight: 700; }
+  #commands-hint { font-size: 11px; color: #888; text-align: right; line-height: 1.7; }
+
+  .screen-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(5,3,20,0.92);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    z-index: 200;
+    border-radius: 13px;
+  }
+  .screen-overlay h1 {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 36px;
+    color: #ffd700;
+    text-shadow: 0 0 30px #ffa500;
+  }
+  .screen-overlay p {
+    font-size: 14px;
+    color: #bbb;
+    text-align: center;
+    line-height: 2;
+    max-width: 400px;
+  }
+  .screen-overlay button {
+    margin-top: 10px;
+    padding: 12px 36px;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: #1a0a2e;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(255,150,0,0.5);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .screen-overlay button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 30px rgba(255,150,0,0.7);
+  }
+
+  #effect-msg {
+    position: absolute;
+    top: 38%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Kaisei Decol', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 20px currentColor;
+    pointer-events: none;
+    z-index: 300;
+    opacity: 0;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div id="ui-top">
+  <div id="score-display">🍎 0</div>
+  <div id="lives-display">❤️❤️❤️</div>
+  <div id="timer-display">⏱ 0秒</div>
+</div>
+
+<div id="game-canvas-wrapper">
+  <canvas id="game-canvas" width="420" height="480"></canvas>
+
+  <div class="screen-overlay" id="start-screen">
+    <h1>🎤 フルーツキャッチ！</h1>
+    <p>
+      <strong style="color:#ffd700">みぎ</strong> → 右に移動し続ける<br>
+      <strong style="color:#ffd700">ひだり</strong> → 左に移動し続ける<br>
+      <strong style="color:#ffd700">とまる</strong> → 止まる<br>
+      <strong style="color:#ffd700">じゃんぷ</strong> → ジャンプ<br>
+      <strong style="color:#ffd700">かご</strong> → かごを拾う<br>
+      <span style="color:#ff8888">ナイス / よくやった → 罠！😏</span>
+    </p>
+    <button id="start-btn">スタート！</button>
+  </div>
+
+  <div class="screen-overlay" id="gameover-screen" style="display:none">
+    <h1>💀 ゲームオーバー</h1>
+    <p id="gameover-score"></p>
+    <button id="retry-btn">もう一度！</button>
+  </div>
+
+  <div id="effect-msg"></div>
+</div>
+
+<div id="voice-panel">
+  <button id="mic-btn">🎤</button>
+  <div id="voice-log">マイクボタンを押して音声認識を開始</div>
+  <div id="commands-hint">
+    みぎ(移動) ひだり(移動)<br>
+    とまる　じゃんぷ　かご<br>
+    <span style="color:#ff8888">ナイス → 罠！</span>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+const W = 420, H = 480;
+
+// ── State ─────────────────────────────────────────────────────────
+let state = 'start';
+let score = 0;
+let lives = 3;
+let elapsed = 0;
+let lastTime = 0;
+let fruits = [];
+let particles = [];
+let rollingApples = [];
+let droppedBasket = null;
+let frameId;
+
+// ── Player ────────────────────────────────────────────────────────
+const GROUND = H - 60;
+const BASKET_W = 80;
+
+const player = {
+  x: W / 2, y: GROUND,
+  vx: 0, vy: 0,
+  onGround: true,
+  anim: 'idle',
+  animTimer: 0,
+  facing: 1,
+  dropTimer: 0,
+  hasBasket: true,
+  goingForBasket: false,
+  moveDir: 0,  // -1=left 0=stop 1=right
+};
+
+// ── Fruits ────────────────────────────────────────────────────────
+const FRUIT_LIST = ['🍎','🍊','🍋','🍇','🍓','🍑','🍒','🥝','🍍','🥭'];
+function spawnFruit() {
+  const speed = 0.9 + elapsed * 0.015;
+  fruits.push({
+    x: 40 + Math.random() * (W - 80),
+    y: -20,
+    vy: Math.min(speed, 4.0),
+    emoji: FRUIT_LIST[Math.floor(Math.random() * FRUIT_LIST.length)],
+    size: 28,
+  });
+}
+
+// ── Particles ─────────────────────────────────────────────────────
+function spawnParticles(x, y, color, n = 8) {
+  for (let i = 0; i < n; i++) {
+    const angle = (Math.PI * 2 * i) / n + Math.random() * 0.5;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * (2 + Math.random() * 4),
+      vy: Math.sin(angle) * (2 + Math.random() * 4) - 3,
+      life: 1.0, color,
+      size: 5 + Math.random() * 5,
+    });
+  }
+}
+
+// ── Rolling apples ─────────────────────────────────────────────────
+function spawnRollingApples(px, py) {
+  for (let i = 0; i < 8; i++) {
+    rollingApples.push({
+      x: px + (Math.random() - 0.5) * 16,
+      y: py,
+      vx: (Math.random() - 0.5) * 8,
+      vy: -Math.random() * 6 - 1,
+      rot: Math.random() * Math.PI * 2,
+      rotV: (Math.random() - 0.5) * 0.45,
+      life: 1.0,
+      bounces: 0,
+    });
+  }
+}
+
+// ── Draw ──────────────────────────────────────────────────────────
+function drawBackground() {
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#0d0620');
+  grad.addColorStop(0.7, '#1a0a3a');
+  grad.addColorStop(1, '#2a1555');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  const gGrad = ctx.createLinearGradient(0, GROUND, 0, H);
+  gGrad.addColorStop(0, '#3a2060');
+  gGrad.addColorStop(1, '#1a0a3a');
+  ctx.fillStyle = gGrad;
+  ctx.fillRect(0, GROUND, W, H - GROUND);
+
+  ctx.strokeStyle = 'rgba(200,150,255,0.5)';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#a050ff';
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.moveTo(0, GROUND); ctx.lineTo(W, GROUND);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function drawBasketShape(cx, cy, scl) {
+  scl = scl || 1;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(scl, scl);
+  ctx.strokeStyle = '#c8a87a';
+  ctx.lineWidth = 2.5 / scl;
+  ctx.lineCap = 'round';
+  // U body
+  ctx.beginPath();
+  ctx.arc(0, 8, 14, 0, Math.PI);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-14, 8); ctx.lineTo(-14, 0);
+  ctx.lineTo(14, 0);  ctx.lineTo(14, 8);
+  ctx.stroke();
+  // weave lines
+  ctx.lineWidth = 1.5 / scl;
+  for (let i = -1; i <= 1; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * 6, 0); ctx.lineTo(i * 6, 16);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawDroppedBasket() {
+  if (!droppedBasket) return;
+  ctx.save();
+  ctx.translate(droppedBasket.x, droppedBasket.y);
+  ctx.rotate(droppedBasket.rot || 0);
+  // glow hint for "かご" command
+  ctx.shadowColor = '#88ffaa';
+  ctx.shadowBlur = 12;
+  drawBasketShape(0, 0, 1.3);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
+function drawFruits() {
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  fruits.forEach(f => {
+    ctx.font = `${f.size}px serif`;
+    ctx.fillText(f.emoji, f.x, f.y);
+  });
+}
+
+function drawRollingApples() {
+  rollingApples.forEach(a => {
+    ctx.save();
+    ctx.globalAlpha = Math.min(a.life * 2, 1);
+    ctx.translate(a.x, a.y);
+    ctx.rotate(a.rot);
+    ctx.font = '20px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🍎', 0, 0);
+    ctx.restore();
+  });
+  ctx.globalAlpha = 1;
+}
+
+function drawParticles() {
+  particles.forEach(p => {
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+// 2-segment limb helper
+function drawLimb(ox, oy, ang1, ang2, len1, len2) {
+  const kx = ox + Math.sin(ang1) * len1;
+  const ky = oy + Math.cos(ang1) * len1;
+  const tx = kx + Math.sin(ang1 + ang2) * len2;
+  const ty = ky + Math.cos(ang1 + ang2) * len2;
+  ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(kx, ky); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(tx, ty); ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(kx, ky, 3.5, 0, Math.PI * 2); ctx.fill();
+  return { x: tx, y: ty };
+}
+
+function drawPlayer() {
+  const p = player;
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.scale(p.facing, 1);
+
+  const t = p.animTimer;
+  const deg = d => d * Math.PI / 180;
+
+  let bodyLean = 0, jumpSX = 1, jumpSY = 1;
+  let armAngL = deg(-30), elbowL = deg(20);
+  let armAngR = deg(30),  elbowR = deg(-20);
+  let thighAngL = deg(0), kneeL = deg(5);
+  let thighAngR = deg(0), kneeR = deg(5);
+
+  if (p.anim === 'walk') {
+    const s   = Math.sin(t * 0.38);           // 速めに振る
+    const s2  = Math.sin(t * 0.38 + Math.PI);
+    const s3  = Math.sin(t * 0.55 + 1.2);     // 別位相でランダム感
+    const s4  = Math.sin(t * 0.25 + 2.5);     // ゆっくり揺れる成分
+    bodyLean  = s * 35 + s4 * 15;             // 体が大げさに左右にふらつく
+    // 腕: 前後に大きく振りつつ肘がぐるぐる
+    armAngL   = deg(-10 + s  * 130 + s3 * 20);
+    elbowL    = deg(20  + Math.abs(s) * 130 + s3 * 30);
+    armAngR   = deg(-10 + s2 * 130 - s3 * 20);
+    elbowR    = deg(20  + Math.abs(s2) * 130 - s3 * 30);
+    // 脚: 膝が大げさに蹴り上がる
+    thighAngL = deg(s  * 95);
+    kneeL     = deg(-Math.abs(s)  * 120 - 10);
+    thighAngR = deg(s2 * 95);
+    kneeR     = deg(-Math.abs(s2) * 120 - 10);
+  }
+  if (p.anim === 'jump') {
+    const ps = Math.sin(Math.min(t / 14, 1) * Math.PI);
+    jumpSY = 1 + ps * 0.55; jumpSX = 1 - ps * 0.32;
+    armAngL = deg(-160 * ps); elbowL = deg(-70 * ps);
+    armAngR = deg(-160 * ps); elbowR = deg(-70 * ps);
+    thighAngL = deg(-35 * ps); kneeL = deg(-85 * ps);
+    thighAngR = deg( 35 * ps); kneeR = deg(-85 * ps);
+  }
+  if (p.anim === 'blush' || p.anim === 'drop') {
+    const w = Math.sin(t * 0.22);
+    armAngL = deg(-85 + w * 35); elbowL = deg(65 + w * 45);
+    armAngR = deg(-85 - w * 35); elbowR = deg(65 - w * 45);
+    bodyLean = w * 12;
+  }
+  if (p.anim === 'pickup') {
+    const ps = Math.sin(Math.min(t / 22, 1) * Math.PI);
+    armAngR  = deg(65 + ps * 65); elbowR = deg(-45 - ps * 45);
+    armAngL  = deg(-25); elbowL = deg(35);
+    thighAngL = deg(45 * ps); kneeL = deg(-75 * ps);
+    thighAngR = deg(-25 * ps); kneeR = deg(-35 * ps);
+    bodyLean  = 22 * ps;
+  }
+
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
+
+  ctx.save();
+  ctx.rotate(deg(bodyLean));
+  ctx.scale(jumpSX, jumpSY);
+
+  // 頭
+  ctx.beginPath(); ctx.arc(0, -62, 13, 0, Math.PI * 2); ctx.stroke();
+
+  // 照れ顔
+  if (p.anim === 'blush' || p.anim === 'drop') {
+    ctx.fillStyle = `rgba(255,100,100,${0.65 + Math.sin(t * 0.22) * 0.25})`;
+    ctx.beginPath(); ctx.arc(-8, -59, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc( 8, -59, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#ffaaaa'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-5,-54); ctx.quadraticCurveTo(0,-57,5,-54); ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5;
+  }
+
+  // 胴体
+  ctx.beginPath(); ctx.moveTo(0, -50); ctx.lineTo(0, -18); ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(0, -42, 3, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, -18, 3, 0, Math.PI * 2); ctx.fill();
+
+  ctx.restore();
+
+  // 腕（肘関節付き）
+  drawLimb(-4, -42, armAngL, elbowL, 18, 18);
+  const rightTip = drawLimb(4, -42, armAngR, elbowR, 18, 18);
+
+  // かご
+  if (p.hasBasket && p.anim !== 'drop') {
+    drawBasketShape(rightTip.x, rightTip.y, 1);
+  }
+
+  // 脚（膝関節付き）
+  drawLimb(-5, -18, thighAngL, kneeL, 22, 22);
+  drawLimb( 5, -18, thighAngR, kneeR, 22, 22);
+
+  ctx.restore();
+}
+
+
+// ── Update ────────────────────────────────────────────────────────
+let fruitSpawnTimer = 0;
+const BASE_SPAWN_INTERVAL = 140;
+
+function update(dt) {
+  if (state !== 'playing') return;
+  elapsed += dt / 1000;
+
+  // player physics
+  if (!player.onGround) {
+    player.vy += 0.55;
+    player.y  += player.vy;
+    if (player.y >= GROUND) {
+      player.y = GROUND; player.vy = 0; player.onGround = true;
+      if (player.anim === 'jump') setAnim('idle');
+    }
+  }
+
+  // "かご" auto-slide
+  if (player.goingForBasket && !player.hasBasket && droppedBasket) {
+    const dx = droppedBasket.x - player.x;
+    if (Math.abs(dx) > 10) {
+      player.vx = dx * 0.2;
+      player.facing = dx > 0 ? 1 : -1;
+      if (player.onGround) setAnim('walk');
+    } else {
+      player.hasBasket = true;
+      player.goingForBasket = false;
+      droppedBasket = null;
+      setAnim('pickup');
+      player.dropTimer = 28;
+      showEffect('かごを拾った！🧺', '#aaffaa');
+    }
+  }
+
+  player.x += player.vx;
+  // 画面外に完全に消えたらゲームオーバー（キャラ幅20px余裕）
+  if (player.x < -20 || player.x > W + 20) { endGame(); return; }
+  // 移動し続けるモード
+  if (player.moveDir !== 0 && player.onGround && !player.goingForBasket) {
+    player.vx = player.moveDir * 3;
+    if (player.anim !== 'walk') setAnim('walk');
+  } else if (player.moveDir === 0) {
+    player.vx *= 0.75;
+    if (Math.abs(player.vx) < 0.5 && player.onGround && player.anim === 'walk') setAnim('idle');
+  } else {
+    player.vx *= 0.80;
+  }
+  player.animTimer++;
+
+  // anim countdown
+  if (['drop','blush','pickup'].includes(player.anim)) {
+    if (player.dropTimer > 0) player.dropTimer--;
+    else setAnim('idle');
+  }
+
+  // dropped basket physics
+  if (droppedBasket) {
+    droppedBasket.vy  += 0.5;
+    droppedBasket.x   += droppedBasket.vx;
+    droppedBasket.y   += droppedBasket.vy;
+    droppedBasket.rot  = (droppedBasket.rot || 0) + (droppedBasket.rotV || 0);
+    if (droppedBasket.y >= GROUND - 14) {
+      droppedBasket.y   = GROUND - 14;
+      droppedBasket.vy *= -0.28;
+      droppedBasket.vx *= 0.72;
+      if (droppedBasket.rotV) droppedBasket.rotV *= 0.6;
+    }
+  }
+
+  // fruit spawn
+  fruitSpawnTimer++;
+  const spawnInterval = Math.max(60, BASE_SPAWN_INTERVAL - elapsed * 1.1);
+  if (fruitSpawnTimer >= spawnInterval) {
+    fruitSpawnTimer = 0;
+    spawnFruit();
+  }
+
+  // fruit update + catch
+  fruits = fruits.filter(f => {
+    f.y += f.vy;
+    if (player.hasBasket && player.anim !== 'drop' &&
+        Math.abs(f.x - player.x) < BASKET_W &&
+        Math.abs(f.y - (player.y - 30)) < 38) {
+      score++;
+      updateScoreDisplay();
+      spawnParticles(f.x, f.y, '#ffd700');
+      return false;
+    }
+    if (f.y > H) {
+      lives--;
+      updateLivesDisplay();
+      spawnParticles(f.x, H - 10, '#ff4444', 6);
+      if (lives <= 0) endGame();
+      return false;
+    }
+    return true;
+  });
+
+  // particles
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= 0.03;
+  });
+  particles = particles.filter(p => p.life > 0);
+
+  // rolling apples
+  rollingApples.forEach(a => {
+    a.x += a.vx; a.y += a.vy; a.vy += 0.38; a.rot += a.rotV;
+    if (a.y > GROUND) {
+      a.y = GROUND; a.vy *= -0.32; a.vx *= 0.80; a.rotV *= 0.65;
+      a.bounces++;
+    }
+    a.life -= a.bounces > 2 ? 0.011 : 0.004;
+  });
+  rollingApples = rollingApples.filter(a => a.life > 0);
+
+  document.getElementById('timer-display').textContent = `⏱ ${Math.floor(elapsed)}秒`;
+}
+
+function setAnim(a) { player.anim = a; player.animTimer = 0; }
+
+// ── Loop ──────────────────────────────────────────────────────────
+function loop(ts) {
+  const dt = ts - lastTime || 16;
+  lastTime = ts;
+  update(dt);
+  ctx.clearRect(0, 0, W, H);
+  drawBackground();
+  drawFruits();
+  drawParticles();
+  drawDroppedBasket();
+  drawRollingApples();
+  drawPlayer();
+  frameId = requestAnimationFrame(loop);
+}
+
+// ── Game control ──────────────────────────────────────────────────
+function startGame() {
+  state = 'playing';
+  score = 0; lives = 3; elapsed = 0;
+  fruits = []; particles = []; rollingApples = [];
+  droppedBasket = null;
+  player.x = W / 2; player.y = GROUND;
+  player.vx = 0; player.vy = 0;
+  player.onGround = true; player.facing = 1;
+  player.hasBasket = true; player.goingForBasket = false; player.moveDir = 0;
+  fruitSpawnTimer = 0;
+  setAnim('idle');
+  updateScoreDisplay(); updateLivesDisplay();
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('gameover-screen').style.display = 'none';
+  if (frameId) cancelAnimationFrame(frameId);
+  frameId = requestAnimationFrame(loop);
+}
+
+function endGame() {
+  state = 'gameover';
+  cancelAnimationFrame(frameId);
+  document.getElementById('gameover-score').innerHTML =
+    `スコア: <strong style="color:#ffd700;font-size:28px">${score}</strong> 個<br>タイム: ${Math.floor(elapsed)} 秒`;
+  document.getElementById('gameover-screen').style.display = 'flex';
+}
+
+function updateScoreDisplay() {
+  document.getElementById('score-display').textContent = `🍎 ${score}`;
+}
+function updateLivesDisplay() {
+  document.getElementById('lives-display').textContent = '❤️'.repeat(Math.max(0, lives));
+}
+
+// ── Effect message ─────────────────────────────────────────────────
+function showEffect(text, color) {
+  color = color || '#fff';
+  const el = document.getElementById('effect-msg');
+  el.style.transition = 'none';
+  el.style.opacity = 0;
+  el.textContent = text;
+  el.style.color = color;
+  requestAnimationFrame(() => {
+    el.style.opacity = 1;
+    el.style.transform = 'translate(-50%, -60%) scale(1.2)';
+    el.style.transition = 'opacity 1s ease, transform 1s ease';
+    setTimeout(() => {
+      el.style.opacity = 0;
+      el.style.transform = 'translate(-50%, -80%) scale(0.85)';
+    }, 1300);
+  });
+}
+
+// ── Voice commands ─────────────────────────────────────────────────
+const cmdCooldown = { jump:0, praise:0, kago:0, stop:0, migi:0, hidari:0 };
+const COOLDOWN_MS  = { jump:500, praise:3000, kago:700, stop:200, migi:300, hidari:300 };
+
+function tryCmd(key, fn) {
+  const now = Date.now();
+  if (now - cmdCooldown[key] < COOLDOWN_MS[key]) return false;
+  cmdCooldown[key] = now; fn(); return true;
+}
+
+function handleCommand(text, isFinal) {
+  if (state !== 'playing') return;
+  const log = document.getElementById('voice-log');
+
+  // ── みぎ → 右に移動し続ける ──
+  if (/みぎ|ミギ|右/i.test(text)) {
+    tryCmd('migi', () => {
+      player.moveDir = 1; player.facing = 1;
+      if (player.onGround) setAnim('walk');
+      log.innerHTML = `「みぎ！」→ <span>右へ移動中…</span>`;
+    });
+
+  // ── ひだり → 左に移動し続ける ──
+  } else if (/ひだり|ヒダリ|左/i.test(text)) {
+    tryCmd('hidari', () => {
+      player.moveDir = -1; player.facing = -1;
+      if (player.onGround) setAnim('walk');
+      log.innerHTML = `「ひだり！」→ <span>左へ移動中…</span>`;
+    });
+
+  // ── とまる → 止まる ──
+  } else if (/とまる|止まる|とまれ|ストップ|stop/i.test(text)) {
+    tryCmd('stop', () => {
+      player.moveDir = 0; player.vx = 0;
+      if (player.onGround) setAnim('idle');
+      log.innerHTML = `「とまる！」→ <span>ストップ！</span>`;
+    });
+
+  // ── じゃんぷ → ジャンプ（「じゃ」で即発火）──
+  } else if (/じゃ|じゃん|じゃんぷ|ジャンプ|jump/i.test(text)) {
+    tryCmd('jump', () => {
+      if (player.onGround) {
+        player.vy = -17; player.onGround = false; setAnim('jump');
+      }
+      log.innerHTML = `「じゃんぷ！」→ <span>大ジャンプ！</span>`;
+    });
+
+  // ── かご → かごを拾いに行く ──
+  } else if (/かご|カゴ/i.test(text) || /^か/i.test(text)) {
+    tryCmd('kago', () => {
+      if (!player.hasBasket && droppedBasket) {
+        player.goingForBasket = true;
+        log.innerHTML = `「かご！」→ <span>かごを拾いに！🧺</span>`;
+      } else if (player.hasBasket) {
+        log.innerHTML = `「かご」→ <span style="color:#888">もう持ってるよ！</span>`;
+      } else {
+        log.innerHTML = `「かご」→ <span style="color:#888">かごがないよ…</span>`;
+      }
+    });
+
+  // ── ナイス/よくやった → 照れ → かご落下 → りんご転がる → スコア半減 ──
+  } else if (isFinal && /ナイス|よくやった|nice|great/i.test(text)) {
+    tryCmd('praise', () => {
+      log.innerHTML = `「${text}」→ <span style="color:#ff8888">えっ…照れる💦</span>`;
+      setAnim('blush');
+      player.dropTimer = 65;
+
+      setTimeout(() => {
+        // かご落下
+        player.hasBasket = false;
+        player.goingForBasket = false;
+        setAnim('drop');
+        player.dropTimer = 55;
+
+        droppedBasket = {
+          x: player.x + player.facing * 24,
+          y: player.y - 38,
+          vx: player.facing * 3.5 + (Math.random() - 0.5) * 2,
+          vy: -6,
+          rot: 0,
+          rotV: 0.18 * player.facing,
+        };
+
+        // 少し遅れてりんごが飛び出す
+        setTimeout(() => {
+          if (droppedBasket) {
+            spawnRollingApples(droppedBasket.x, droppedBasket.y + 8);
+          }
+          const lost = Math.floor(score / 2);
+          score = Math.max(0, score - lost);
+          updateScoreDisplay();
+          showEffect(`💔 -${lost}点！`, '#ff6666');
+          log.innerHTML = `かごを落とした！<span style="color:#ff8888"> -${lost}点…「かご」と言って拾って！</span>`;
+        }, 380);
+      }, 850);
+    });
+
+  } else if (isFinal && text.trim()) {
+    log.innerHTML = `「${text}」<span style="color:#555"> ← ?</span>`;
+  }
+}
+
+// ── Speech Recognition ─────────────────────────────────────────────
+let recognition = null;
+let isListening = false;
+let lastInterimText = '';
+const micBtn = document.getElementById('mic-btn');
+
+function initSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    document.getElementById('voice-log').textContent = '⚠️ Chrome推奨（音声認識非対応）';
+    return;
+  }
+  recognition = new SR();
+  recognition.lang = 'ja-JP';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 3;
+
+  recognition.onresult = (e) => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const result  = e.results[i];
+      const isFinal = result.isFinal;
+
+      for (let j = 0; j < result.length; j++) {
+        const text = result[j].transcript.trim();
+        if (!text) continue;
+        if (isFinal) {
+          lastInterimText = '';
+          handleCommand(text, true);
+        } else {
+          // 途中テキストが変わった瞬間だけ発火 → 高速反応
+          if (text !== lastInterimText) {
+            lastInterimText = text;
+            handleCommand(text, false);
+          }
+        }
+      }
+    }
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'no-speech' || e.error === 'aborted') return;
+    document.getElementById('voice-log').textContent = `エラー: ${e.error}`;
+  };
+
+  recognition.onend = () => {
+    if (isListening) { try { recognition.start(); } catch(ex) {} }
+  };
+}
+
+micBtn.addEventListener('click', () => {
+  if (!recognition) { initSpeech(); if (!recognition) return; }
+  if (!isListening) {
+    isListening = true;
+    try { recognition.start(); } catch(e) {}
+    micBtn.classList.add('listening');
+    micBtn.textContent = '🔴';
+    document.getElementById('voice-log').innerHTML = '<span>認識中…はっきり話しかけて！</span>';
+  } else {
+    isListening = false;
+    try { recognition.stop(); } catch(e) {}
+    micBtn.classList.remove('listening');
+    micBtn.textContent = '🎤';
+    document.getElementById('voice-log').textContent = 'マイクボタンを押して音声認識を開始';
+  }
+});
+
+document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('retry-btn').addEventListener('click', startGame);
+
+drawBackground();
+drawPlayer();
+</script>
+</body>
+</html>
