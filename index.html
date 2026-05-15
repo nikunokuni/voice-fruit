@@ -63,8 +63,8 @@
 
   #game-canvas-wrapper {
     position: relative;
-    width: 600px;
-    height: 480px;
+    width: 420px;
+    height: 600px;
     margin-top: 60px;
     border-radius: 16px;
     overflow: hidden;
@@ -555,7 +555,7 @@ function drawPlayer() {
 
 // ── Update ────────────────────────────────────────────────────────
 let fruitSpawnTimer = 0;
-const BASE_SPAWN_INTERVAL = 140;
+const BASE_SPAWN_INTERVAL = 200;
 
 function update(dt) {
   if (state !== 'playing') return;
