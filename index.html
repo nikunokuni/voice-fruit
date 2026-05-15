@@ -63,7 +63,7 @@
 
   #game-canvas-wrapper {
     position: relative;
-    width: 420px;
+    width: 600px;
     height: 480px;
     margin-top: 60px;
     border-radius: 16px;
@@ -182,7 +182,7 @@
 </div>
 
 <div id="game-canvas-wrapper">
-  <canvas id="game-canvas" width="420" height="480"></canvas>
+  <canvas id="game-canvas" width="600" height="480"></canvas>
 
   <div class="screen-overlay" id="start-screen">
     <h1>🎤 フルーツキャッチ！</h1>
@@ -219,7 +219,7 @@
 <script>
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
-const W = 420, H = 480;
+const W = 600, H = 480;
 
 // ── State ─────────────────────────────────────────────────────────
 let state = 'start';
@@ -546,7 +546,7 @@ function update(dt) {
   if (player.x < -20 || player.x > W + 20) { endGame(); return; }
   // 移動し続けるモード
   if (player.moveDir !== 0 && player.onGround && !player.goingForBasket) {
-    player.vx = player.moveDir * 3;
+    player.vx = player.moveDir * 1.5;
     if (player.anim !== 'walk') setAnim('walk');
   } else if (player.moveDir === 0) {
     player.vx *= 0.75;
