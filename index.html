@@ -63,8 +63,8 @@
 
   #game-canvas-wrapper {
     position: relative;
-    width: 500px;
-    height: 600px;
+    width: 600px;
+    height: 480px;
     margin-top: 60px;
     border-radius: 16px;
     overflow: hidden;
@@ -248,6 +248,8 @@ const player = {
   hasBasket: true,
   goingForBasket: false,
   moveDir: 0,  // -1=left 0=stop 1=right
+  praisePhase: 0,  // 0=none 1=blush 2=scratch 3=drop
+  praiseTimer: 0,
 };
 
 // ── Fruits ────────────────────────────────────────────────────────
@@ -445,11 +447,39 @@ function drawPlayer() {
     thighAngL = deg(-35 * ps); kneeL = deg(-85 * ps);
     thighAngR = deg( 35 * ps); kneeR = deg(-85 * ps);
   }
-  if (p.anim === 'blush' || p.anim === 'drop') {
-    const w = Math.sin(t * 0.22);
-    armAngL = deg(-85 + w * 35); elbowL = deg(65 + w * 45);
-    armAngR = deg(-85 - w * 35); elbowR = deg(65 - w * 45);
-    bodyLean = w * 12;
+  if (p.anim === 'blush') {
+    // もじもじフェーズ：体がゆっくり左右に揺れる
+    const w  = Math.sin(t * 0.10);   // ゆっくり
+    const w2 = Math.sin(t * 0.16 + 1.0);
+    bodyLean  = w * 8 + w2 * 5;
+    // 両腕が内側に閉じてもじもじ
+    armAngL  = deg(-60 + w  * 20);  elbowL = deg(50 + Math.abs(w)  * 30);
+    armAngR  = deg(-60 - w2 * 20);  elbowR = deg(50 + Math.abs(w2) * 30);
+    // 足もそわそわ
+    thighAngL = deg(w  * 15);  kneeL = deg(-Math.abs(w)  * 20);
+    thighAngR = deg(w2 * 15);  kneeR = deg(-Math.abs(w2) * 20);
+  }
+  if (p.anim === 'scratch') {
+    // 頭かきフェーズ：右腕がゆっくり頭へ伸びる
+    const phase = Math.min(p.praiseTimer / 80, 1.0);  // 0→1
+    const swing = Math.sin(p.praiseTimer * 0.18) * 12; // 頭をかく細かい動き
+    bodyLean  = Math.sin(p.praiseTimer * 0.08) * 6;
+    // 右腕を頭の位置へゆっくり持ち上げる
+    armAngR  = deg(-30 + phase * (-120) + swing);
+    elbowR   = deg(20  + phase * 80);
+    // 左腕はだらっと下げる
+    armAngL  = deg(30);  elbowL = deg(10);
+    thighAngL = deg(0);  kneeL  = deg(5);
+    thighAngR = deg(0);  kneeR  = deg(5);
+  }
+  if (p.anim === 'drop') {
+    // かごを落とした後：がっくり
+    const w = Math.sin(p.praiseTimer * 0.12);
+    bodyLean  = -15 + w * 5;  // 前傾みで落ち込む
+    armAngL  = deg(40 + w * 10);  elbowL = deg(20);
+    armAngR  = deg(40 - w * 10);  elbowR = deg(20);
+    thighAngL = deg(10);  kneeL = deg(-15);
+    thighAngR = deg(-10); kneeR = deg(-15);
   }
   if (p.anim === 'pickup') {
     const ps = Math.sin(Math.min(t / 22, 1) * Math.PI);
@@ -471,13 +501,30 @@ function drawPlayer() {
   // 頭
   ctx.beginPath(); ctx.arc(0, -62, 13, 0, Math.PI * 2); ctx.stroke();
 
-  // 照れ顔
-  if (p.anim === 'blush' || p.anim === 'drop') {
-    ctx.fillStyle = `rgba(255,100,100,${0.65 + Math.sin(t * 0.22) * 0.25})`;
-    ctx.beginPath(); ctx.arc(-8, -59, 6, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc( 8, -59, 6, 0, Math.PI * 2); ctx.fill();
+  // 照れ顔（blush / scratch / drop 共通）
+  if (p.anim === 'blush' || p.anim === 'scratch' || p.anim === 'drop') {
+    // 頬の赤み：blushフェーズでじわっと濃くなる
+    const blushStrength = p.anim === 'blush'
+      ? 0.4 + Math.min(p.praiseTimer / 80, 1) * 0.5   // じわじわ濃くなる
+      : p.anim === 'scratch' ? 0.85 + Math.sin(p.praiseTimer * 0.2) * 0.1
+      : 0.5 + Math.sin(p.praiseTimer * 0.15) * 0.2;
+    ctx.fillStyle = `rgba(255,80,80,${blushStrength})`;
+    ctx.beginPath(); ctx.arc(-9, -58, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc( 9, -58, 7, 0, Math.PI * 2); ctx.fill();
+    // 汗マーク（scratch 以降）
+    if (p.anim === 'scratch' || p.anim === 'drop') {
+      ctx.fillStyle = 'rgba(100,200,255,0.9)';
+      ctx.font = '10px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('💦', 18 * p.facing, -72);
+    }
+    // 困り眉（への字）
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(-7,-65); ctx.quadraticCurveTo(-4,-68,-1,-65); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo( 7,-65); ctx.quadraticCurveTo( 4,-68, 1,-65); ctx.stroke();
+    // 口（へにゃっとした線）
     ctx.strokeStyle = '#ffaaaa'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(-5,-54); ctx.quadraticCurveTo(0,-57,5,-54); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-5,-53); ctx.quadraticCurveTo(0,-50,5,-53); ctx.stroke();
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5;
   }
 
@@ -555,6 +602,13 @@ function update(dt) {
     player.vx *= 0.80;
   }
   player.animTimer++;
+
+  // praiseTimer は常にインクリメント（フェーズ内アニメ用）
+  if (['blush','scratch','drop'].includes(player.anim)) {
+    player.praiseTimer++;
+  } else {
+    player.praiseTimer = 0;
+  }
 
   // anim countdown
   if (['drop','blush','pickup'].includes(player.anim)) {
@@ -651,7 +705,7 @@ function startGame() {
   player.x = W / 2; player.y = GROUND;
   player.vx = 0; player.vy = 0;
   player.onGround = true; player.facing = 1;
-  player.hasBasket = true; player.goingForBasket = false; player.moveDir = 0;
+  player.hasBasket = true; player.goingForBasket = false; player.moveDir = 0; player.praisePhase = 0; player.praiseTimer = 0;
   fruitSpawnTimer = 0;
   setAnim('idle');
   updateScoreDisplay(); updateLivesDisplay();
@@ -755,41 +809,60 @@ function handleCommand(text, isFinal) {
       }
     });
 
-  // ── ナイス/よくやった → 照れ → かご落下 → りんご転がる → スコア半減 ──
+  // ── ナイス/よくやった → 照れ → 頭かき → かご落下 → りんご → スコア半減 ──
   } else if (isFinal && /ナイス|よくやった|nice|great/i.test(text)) {
     tryCmd('praise', () => {
-      log.innerHTML = `「${text}」→ <span style="color:#ff8888">えっ…照れる💦</span>`;
+      // フェーズ1: じわっと照れる（2秒）
+      player.moveDir = 0; player.vx = 0;
       setAnim('blush');
-      player.dropTimer = 65;
+      player.praisePhase = 1;
+      log.innerHTML = `「${text}」→ <span style="color:#ff8888">え…っ 😳</span>`;
 
+      // フェーズ2: 頭をかく（1.5秒）
       setTimeout(() => {
-        // かご落下
+        if (player.praisePhase !== 1) return;
+        setAnim('scratch');
+        player.praisePhase = 2;
+        log.innerHTML = `<span style="color:#ff8888">えへへ… 💦（頭かき中）</span>`;
+      }, 2000);
+
+      // フェーズ3: かごを落とす
+      setTimeout(() => {
+        if (player.praisePhase !== 2) return;
+        player.praisePhase = 3;
         player.hasBasket = false;
         player.goingForBasket = false;
         setAnim('drop');
-        player.dropTimer = 55;
+        player.dropTimer = 999; // スコア表示後に手動解除
 
         droppedBasket = {
           x: player.x + player.facing * 24,
           y: player.y - 38,
-          vx: player.facing * 3.5 + (Math.random() - 0.5) * 2,
-          vy: -6,
+          vx: player.facing * 2.5 + (Math.random() - 0.5) * 1.5,
+          vy: -5,
           rot: 0,
-          rotV: 0.18 * player.facing,
+          rotV: 0.14 * player.facing,
         };
+        log.innerHTML = `<span style="color:#ff8888">あっ！かごが…！🧺💥</span>`;
+      }, 3500);
 
-        // 少し遅れてりんごが飛び出す
-        setTimeout(() => {
-          if (droppedBasket) {
-            spawnRollingApples(droppedBasket.x, droppedBasket.y + 8);
-          }
-          const lost = Math.floor(score / 2);
-          score = Math.max(0, score - lost);
-          updateScoreDisplay();
-          showEffect(`💔 -${lost}点！`, '#ff6666');
-          log.innerHTML = `かごを落とした！<span style="color:#ff8888"> -${lost}点…「かご」と言って拾って！</span>`;
-        }, 380);
-      }, 850);
+      // フェーズ4: りんごが転がる
+      setTimeout(() => {
+        if (droppedBasket) {
+          spawnRollingApples(droppedBasket.x, droppedBasket.y + 8);
+        }
+      }, 4000);
+
+      // フェーズ5: スコア半減 → 落ち込みアニメ終了
+      setTimeout(() => {
+        const lost = Math.floor(score / 2);
+        score = Math.max(0, score - lost);
+        updateScoreDisplay();
+        showEffect(`💔 -${lost}点！`, '#ff6666');
+        log.innerHTML = `かごを落とした！<span style="color:#ff8888"> -${lost}点…「かご」と言って拾って！</span>`;
+        player.praisePhase = 0;
+        player.dropTimer = 60; // 落ち込みポーズをあと1秒
+      }, 4300);
     });
 
   } else if (isFinal && text.trim()) {
