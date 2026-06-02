@@ -63,8 +63,8 @@
 
   #game-canvas-wrapper {
     position: relative;
-    width: 420px;
-    height: 600px;
+    width: 600px;
+    height: 480px;
     margin-top: 60px;
     border-radius: 16px;
     overflow: hidden;
@@ -191,8 +191,7 @@
       <strong style="color:#ffd700">ひだり</strong> → 左に移動し続ける<br>
       <strong style="color:#ffd700">とまる</strong> → 止まる<br>
       <strong style="color:#ffd700">じゃんぷ</strong> → ジャンプ<br>
-      <strong style="color:#ffd700">かご</strong> → かごを拾う<br>
-      <span style="color:#ff8888">ナイス / よくやった → 罠！😏</span>
+      <strong style="color:#ffd700">かご</strong> → かごを拾う
     </p>
     <button id="start-btn">スタート！</button>
   </div>
@@ -211,8 +210,7 @@
   <div id="voice-log">マイクボタンを押して音声認識を開始</div>
   <div id="commands-hint">
     みぎ(移動) ひだり(移動)<br>
-    とまる　じゃんぷ　かご<br>
-    <span style="color:#ff8888">ナイス → 罠！</span>
+    とまる　じゃんぷ　かご
   </div>
 </div>
 
@@ -409,12 +407,8 @@ function drawLimb(ox, oy, ang1, ang2, len1, len2) {
 
 function drawPlayer() {
   const p = player;
-  ctx.save();
-  ctx.translate(p.x, p.y);
-  ctx.scale(p.facing, 1);
-
-  const t = p.animTimer;
   const deg = d => d * Math.PI / 180;
+  const t = p.animTimer;
 
   let bodyLean = 0, jumpSX = 1, jumpSY = 1;
   let armAngL = deg(-30), elbowL = deg(20);
@@ -423,65 +417,49 @@ function drawPlayer() {
   let thighAngR = deg(0), kneeR = deg(5);
 
   if (p.anim === 'walk') {
-    const s   = Math.sin(t * 0.38);           // 速めに振る
-    const s2  = Math.sin(t * 0.38 + Math.PI);
-    const s3  = Math.sin(t * 0.55 + 1.2);     // 別位相でランダム感
-    const s4  = Math.sin(t * 0.25 + 2.5);     // ゆっくり揺れる成分
-    bodyLean  = s * 35 + s4 * 15;             // 体が大げさに左右にふらつく
-    // 腕: 前後に大きく振りつつ肘がぐるぐる
+    const s  = Math.sin(t * 0.38);
+    const s2 = Math.sin(t * 0.38 + Math.PI);
+    const s3 = Math.sin(t * 0.55 + 1.2);
+    const s4 = Math.sin(t * 0.25 + 2.5);
+    bodyLean  = s * 35 + s4 * 15;
     armAngL   = deg(-10 + s  * 130 + s3 * 20);
-    elbowL    = deg(20  + Math.abs(s) * 130 + s3 * 30);
+    elbowL    = deg(20  + Math.abs(s)  * 130 + s3 * 30);
     armAngR   = deg(-10 + s2 * 130 - s3 * 20);
     elbowR    = deg(20  + Math.abs(s2) * 130 - s3 * 30);
-    // 脚: 膝が大げさに蹴り上がる
     thighAngL = deg(s  * 95);
     kneeL     = deg(-Math.abs(s)  * 120 - 10);
     thighAngR = deg(s2 * 95);
     kneeR     = deg(-Math.abs(s2) * 120 - 10);
-  }
-  if (p.anim === 'jump') {
+  } else if (p.anim === 'jump') {
     const ps = Math.sin(Math.min(t / 14, 1) * Math.PI);
     jumpSY = 1 + ps * 0.55; jumpSX = 1 - ps * 0.32;
     armAngL = deg(-160 * ps); elbowL = deg(-70 * ps);
     armAngR = deg(-160 * ps); elbowR = deg(-70 * ps);
     thighAngL = deg(-35 * ps); kneeL = deg(-85 * ps);
     thighAngR = deg( 35 * ps); kneeR = deg(-85 * ps);
-  }
-  if (p.anim === 'blush') {
-    // もじもじフェーズ：体がゆっくり左右に揺れる
-    const w  = Math.sin(t * 0.10);   // ゆっくり
+  } else if (p.anim === 'blush') {
+    const w  = Math.sin(t * 0.10);
     const w2 = Math.sin(t * 0.16 + 1.0);
     bodyLean  = w * 8 + w2 * 5;
-    // 両腕が内側に閉じてもじもじ
     armAngL  = deg(-60 + w  * 20);  elbowL = deg(50 + Math.abs(w)  * 30);
     armAngR  = deg(-60 - w2 * 20);  elbowR = deg(50 + Math.abs(w2) * 30);
-    // 足もそわそわ
     thighAngL = deg(w  * 15);  kneeL = deg(-Math.abs(w)  * 20);
     thighAngR = deg(w2 * 15);  kneeR = deg(-Math.abs(w2) * 20);
-  }
-  if (p.anim === 'scratch') {
-    // 頭かきフェーズ：右腕がゆっくり頭へ伸びる
-    const phase = Math.min(p.praiseTimer / 80, 1.0);  // 0→1
-    const swing = Math.sin(p.praiseTimer * 0.18) * 12; // 頭をかく細かい動き
+  } else if (p.anim === 'scratch') {
+    const phase = Math.min(p.praiseTimer / 80, 1.0);
+    const swing = Math.sin(p.praiseTimer * 0.18) * 12;
     bodyLean  = Math.sin(p.praiseTimer * 0.08) * 6;
-    // 右腕を頭の位置へゆっくり持ち上げる
     armAngR  = deg(-30 + phase * (-120) + swing);
     elbowR   = deg(20  + phase * 80);
-    // 左腕はだらっと下げる
     armAngL  = deg(30);  elbowL = deg(10);
-    thighAngL = deg(0);  kneeL  = deg(5);
-    thighAngR = deg(0);  kneeR  = deg(5);
-  }
-  if (p.anim === 'drop') {
-    // かごを落とした後：がっくり
+  } else if (p.anim === 'drop') {
     const w = Math.sin(p.praiseTimer * 0.12);
-    bodyLean  = -15 + w * 5;  // 前傾みで落ち込む
+    bodyLean  = -15 + w * 5;
     armAngL  = deg(40 + w * 10);  elbowL = deg(20);
     armAngR  = deg(40 - w * 10);  elbowR = deg(20);
     thighAngL = deg(10);  kneeL = deg(-15);
     thighAngR = deg(-10); kneeR = deg(-15);
-  }
-  if (p.anim === 'pickup') {
+  } else if (p.anim === 'pickup') {
     const ps = Math.sin(Math.min(t / 22, 1) * Math.PI);
     armAngR  = deg(65 + ps * 65); elbowR = deg(-45 - ps * 45);
     armAngL  = deg(-25); elbowL = deg(35);
@@ -490,6 +468,12 @@ function drawPlayer() {
     bodyLean  = 22 * ps;
   }
 
+  ctx.save();
+  ctx.translate(p.x, p.y);
+
+  // ── Body (flipped by facing direction) ──
+  ctx.save();
+  ctx.scale(p.facing, 1);
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = 3.5;
   ctx.lineCap = 'round';
@@ -498,64 +482,117 @@ function drawPlayer() {
   ctx.rotate(deg(bodyLean));
   ctx.scale(jumpSX, jumpSY);
 
-  // 頭
-  ctx.beginPath(); ctx.arc(0, -62, 13, 0, Math.PI * 2); ctx.stroke();
-
-  // 照れ顔（blush / scratch / drop 共通）
-  if (p.anim === 'blush' || p.anim === 'scratch' || p.anim === 'drop') {
-    // 頬の赤み：blushフェーズでじわっと濃くなる
-    const blushStrength = p.anim === 'blush'
-      ? 0.4 + Math.min(p.praiseTimer / 80, 1) * 0.5   // じわじわ濃くなる
-      : p.anim === 'scratch' ? 0.85 + Math.sin(p.praiseTimer * 0.2) * 0.1
-      : 0.5 + Math.sin(p.praiseTimer * 0.15) * 0.2;
-    ctx.fillStyle = `rgba(255,80,80,${blushStrength})`;
-    ctx.beginPath(); ctx.arc(-9, -58, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc( 9, -58, 7, 0, Math.PI * 2); ctx.fill();
-    // 汗マーク（scratch 以降）
-    if (p.anim === 'scratch' || p.anim === 'drop') {
-      ctx.fillStyle = 'rgba(100,200,255,0.9)';
-      ctx.font = '10px serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('💦', 18 * p.facing, -72);
-    }
-    // 困り眉（への字）
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;
-    ctx.beginPath(); ctx.moveTo(-7,-65); ctx.quadraticCurveTo(-4,-68,-1,-65); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo( 7,-65); ctx.quadraticCurveTo( 4,-68, 1,-65); ctx.stroke();
-    // 口（へにゃっとした線）
-    ctx.strokeStyle = '#ffaaaa'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(-5,-53); ctx.quadraticCurveTo(0,-50,5,-53); ctx.stroke();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5;
-  }
-
   // 胴体
   ctx.beginPath(); ctx.moveTo(0, -50); ctx.lineTo(0, -18); ctx.stroke();
   ctx.fillStyle = '#fff';
   ctx.beginPath(); ctx.arc(0, -42, 3, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.arc(0, -18, 3, 0, Math.PI * 2); ctx.fill();
 
+  // 頭（輪郭のみ）
+  ctx.beginPath(); ctx.arc(0, -62, 13, 0, Math.PI * 2); ctx.stroke();
+
   ctx.restore();
 
   // 腕（肘関節付き）
+  ctx.save();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+  ctx.rotate(deg(bodyLean));
   drawLimb(-4, -42, armAngL, elbowL, 18, 18);
   const rightTip = drawLimb(4, -42, armAngR, elbowR, 18, 18);
-
   // かご
-  if (p.hasBasket && p.anim !== 'drop') {
-    drawBasketShape(rightTip.x, rightTip.y, 1);
-  }
+  if (p.hasBasket && p.anim !== 'drop') drawBasketShape(rightTip.x, rightTip.y, 1);
+  ctx.restore();
 
   // 脚（膝関節付き）
+  ctx.save();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+  ctx.rotate(deg(bodyLean));
   drawLimb(-5, -18, thighAngL, kneeL, 22, 22);
   drawLimb( 5, -18, thighAngR, kneeR, 22, 22);
+  ctx.restore();
+
+  ctx.restore(); // end scale(facing)
+
+  // ── Face (always forward-facing, no scale flip) ──
+  ctx.save();
+  ctx.rotate(deg(bodyLean));
+  ctx.scale(jumpSX, jumpSY);
+
+  const isEmbarrassed = p.anim === 'blush' || p.anim === 'scratch' || p.anim === 'drop';
+
+  if (isEmbarrassed) {
+    // 照れ顔: 頬赤み
+    const blushStrength = p.anim === 'blush'
+      ? 0.4 + Math.min(p.praiseTimer / 80, 1) * 0.5
+      : p.anim === 'scratch' ? 0.85 + Math.sin(p.praiseTimer * 0.2) * 0.1
+      : 0.5 + Math.sin(p.praiseTimer * 0.15) * 0.2;
+    ctx.fillStyle = `rgba(255,80,80,${blushStrength})`;
+    ctx.beginPath(); ctx.arc(-9, -58, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc( 9, -58, 7, 0, Math.PI * 2); ctx.fill();
+    // 汗マーク
+    if (p.anim === 'scratch' || p.anim === 'drop') {
+      ctx.font = '10px serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(100,200,255,0.9)';
+      ctx.fillText('💦', 18, -72);
+    }
+    // 困り眉（への字）
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(-7,-65); ctx.quadraticCurveTo(-4,-68,-1,-65); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo( 7,-65); ctx.quadraticCurveTo( 4,-68, 1,-65); ctx.stroke();
+    // 困り口
+    ctx.strokeStyle = '#ffaaaa'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-5,-53); ctx.quadraticCurveTo(0,-50,5,-53); ctx.stroke();
+  } else {
+    // めっちゃ笑顔: 目はキラキラ弧、口は大きなU字
+    // bounce for walk/jump
+    const bounce = p.anim === 'walk'
+      ? Math.abs(Math.sin(t * 0.38)) * 1.5
+      : p.anim === 'jump' ? Math.sin(Math.min(t / 14, 1) * Math.PI) * 2
+      : 0;
+    const fy = -62 + bounce * 0.3;
+
+    // ほっぺ（薄いピンク）
+    ctx.fillStyle = 'rgba(255,150,150,0.35)';
+    ctx.beginPath(); ctx.ellipse(-9, fy + 5, 6, 4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse( 9, fy + 5, 6, 4, 0, 0, Math.PI * 2); ctx.fill();
+
+    // 目（アーチ型＝笑い目）
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+    // 左目
+    ctx.beginPath();
+    ctx.arc(-6, fy - 3, 5, Math.PI + 0.4, Math.PI * 2 - 0.4);
+    ctx.stroke();
+    // 右目
+    ctx.beginPath();
+    ctx.arc( 6, fy - 3, 5, Math.PI + 0.4, Math.PI * 2 - 0.4);
+    ctx.stroke();
+
+    // 口（大きなU字の笑顔）
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(0, fy + 1, 7, 0.1, Math.PI - 0.1);
+    ctx.stroke();
+
+    // キラキラ星（idle/walk のとき）
+    if (p.anim === 'idle' || p.anim === 'walk') {
+      const sparkle = 0.6 + Math.sin(t * 0.15) * 0.4;
+      ctx.fillStyle = `rgba(255,230,80,${sparkle})`;
+      ctx.font = '8px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('✨', -14, fy - 10);
+      ctx.fillText('✨',  14, fy - 10);
+    }
+  }
 
   ctx.restore();
+  ctx.restore(); // end translate
 }
 
 
 // ── Update ────────────────────────────────────────────────────────
 let fruitSpawnTimer = 0;
-const BASE_SPAWN_INTERVAL = 200;
+const BASE_SPAWN_INTERVAL = 140;
 
 function update(dt) {
   if (state !== 'playing') return;
