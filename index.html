@@ -278,19 +278,19 @@ function spawnParticles(x, y, color, n = 8) {
 }
 
 // ── Rolling apples ─────────────────────────────────────────────────
-function spawnRollingApples(px, py) {
-  for (let i = 0; i < 8; i++) {
-    rollingApples.push({
-      x: px + (Math.random() - 0.5) * 16,
-      y: py,
-      vx: (Math.random() - 0.5) * 8,
-      vy: -Math.random() * 6 - 1,
-      rot: Math.random() * Math.PI * 2,
-      rotV: (Math.random() - 0.5) * 0.45,
-      life: 1.0,
-      bounces: 0,
-    });
-  }
+function spawnRollingApple(px, py) {
+  // 1個だけ、ゆっくりコロンと転がる
+  const dir = Math.random() < 0.5 ? 1 : -1;
+  rollingApples.push({
+    x: px,
+    y: py,
+    vx: dir * (1.2 + Math.random() * 1.5),
+    vy: -1.5,
+    rot: 0,
+    rotV: dir * (0.08 + Math.random() * 0.06),
+    life: 1.0,
+    bounces: 0,
+  });
 }
 
 // ── Draw ──────────────────────────────────────────────────────────
@@ -497,10 +497,35 @@ function drawPlayer() {
   ctx.save();
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
   ctx.rotate(deg(bodyLean));
-  drawLimb(-4, -42, armAngL, elbowL, 18, 18);
-  const rightTip = drawLimb(4, -42, armAngR, elbowR, 18, 18);
-  // かご
-  if (p.hasBasket && p.anim !== 'drop') drawBasketShape(rightTip.x, rightTip.y, 1);
+  const leftTip  = drawLimb(-4, -42, armAngL, elbowL, 18, 18);
+  const rightTip = drawLimb(4,  -42, armAngR, elbowR, 18, 18);
+
+  if (p.hasBasket && p.anim !== 'drop') {
+    if (p.anim === 'scratch') {
+      // 頭かき中：左手だけで支える＋かごがふらつく
+      const swayPhase = Math.min(p.praiseTimer / 80, 1.0);
+      const sway = Math.sin(p.praiseTimer * 0.22) * (8 + swayPhase * 14);
+      // かごを左手先端から揺れる位置へ紐でぶら下げ
+      const ropeEndX = leftTip.x + sway;
+      const ropeEndY = leftTip.y + 10 + swayPhase * 6;
+      ctx.save();
+      ctx.strokeStyle = '#c8a87a'; ctx.lineWidth = 1.8; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(leftTip.x, leftTip.y); ctx.lineTo(ropeEndX, ropeEndY); ctx.stroke();
+      ctx.restore();
+      drawBasketShape(ropeEndX, ropeEndY, 1);
+    } else {
+      // 通常：両手でかごを支える（左右の中間点に描く）
+      const midX = (leftTip.x + rightTip.x) / 2;
+      const midY = (leftTip.y + rightTip.y) / 2;
+      // 左手→かご左端・右手→かご右端を線で繋ぐ
+      ctx.save();
+      ctx.strokeStyle = '#c8a87a'; ctx.lineWidth = 1.8; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(leftTip.x,  leftTip.y);  ctx.lineTo(midX - 10, midY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(rightTip.x, rightTip.y); ctx.lineTo(midX + 10, midY); ctx.stroke();
+      ctx.restore();
+      drawBasketShape(midX, midY, 1);
+    }
+  }
   ctx.restore();
 
   // 脚（膝関節付き）
@@ -647,6 +672,26 @@ function update(dt) {
     player.praiseTimer = 0;
   }
 
+  // scratch中：ふらつきが最大になったらかごが自然に滑り落ちる
+  if (player.anim === 'scratch' && player.praisePhase === 2 && player.hasBasket && player.praiseTimer === 90) {
+    player.praisePhase = 3;
+    player.hasBasket = false;
+    player.goingForBasket = false;
+    setAnim('drop');
+    player.dropTimer = 999;
+    droppedBasket = {
+      x: player.x - player.facing * 10,
+      y: player.y - 28,
+      vx: -player.facing * 1.8 + (Math.random() - 0.5) * 1.2,
+      vy: 0,
+      rot: 0,
+      rotV: -0.10 * player.facing,
+    };
+    // リンゴ1個は着地後に転がる（basket着地イベントで発火）
+    droppedBasket._appleSpawned = false;
+    document.getElementById('voice-log').innerHTML = `<span style="color:#ff8888">あっ！かごが…！🧺</span>`;
+  }
+
   // anim countdown
   if (['drop','blush','pickup'].includes(player.anim)) {
     if (player.dropTimer > 0) player.dropTimer--;
@@ -664,6 +709,11 @@ function update(dt) {
       droppedBasket.vy *= -0.28;
       droppedBasket.vx *= 0.72;
       if (droppedBasket.rotV) droppedBasket.rotV *= 0.6;
+      // 初回着地でリンゴ1個がコロンと転がり出る
+      if (!droppedBasket._appleSpawned) {
+        droppedBasket._appleSpawned = true;
+        spawnRollingApple(droppedBasket.x, GROUND);
+      }
     }
   }
 
@@ -801,7 +851,7 @@ function handleCommand(text, isFinal) {
   const log = document.getElementById('voice-log');
 
   // ── みぎ → 右に移動し続ける ──
-      if (/^(みぎ|ミギ|右)/.test(text)) {
+  if (/^(みぎ|ミギ|右)/.test(text)) {
     tryCmd('migi', () => {
       player.moveDir = 1; player.facing = 1;
       if (player.onGround) setAnim('walk');
@@ -809,7 +859,7 @@ function handleCommand(text, isFinal) {
     });
 
   // ── ひだり → 左に移動し続ける ──
- } else if (/^(ひだり|ヒダリ|左)/.test(text)) {
+  } else if (/^(ひだり|ヒダリ|左)/.test(text))  {
     tryCmd('hidari', () => {
       player.moveDir = -1; player.facing = -1;
       if (player.onGround) setAnim('walk');
@@ -855,51 +905,26 @@ function handleCommand(text, isFinal) {
       player.praisePhase = 1;
       log.innerHTML = `「${text}」→ <span style="color:#ff8888">え…っ 😳</span>`;
 
-      // フェーズ2: 頭をかく（1.5秒）
+      // フェーズ2: 頭をかく（scratch中にふらつきが最大になったら自動でかご落下）
       setTimeout(() => {
         if (player.praisePhase !== 1) return;
         setAnim('scratch');
         player.praisePhase = 2;
+        player.praiseTimer = 0;
         log.innerHTML = `<span style="color:#ff8888">えへへ… 💦（頭かき中）</span>`;
       }, 2000);
 
-      // フェーズ3: かごを落とす
-      setTimeout(() => {
-        if (player.praisePhase !== 2) return;
-        player.praisePhase = 3;
-        player.hasBasket = false;
-        player.goingForBasket = false;
-        setAnim('drop');
-        player.dropTimer = 999; // スコア表示後に手動解除
-
-        droppedBasket = {
-          x: player.x + player.facing * 24,
-          y: player.y - 38,
-          vx: player.facing * 2.5 + (Math.random() - 0.5) * 1.5,
-          vy: -5,
-          rot: 0,
-          rotV: 0.14 * player.facing,
-        };
-        log.innerHTML = `<span style="color:#ff8888">あっ！かごが…！🧺💥</span>`;
-      }, 3500);
-
-      // フェーズ4: りんごが転がる
-      setTimeout(() => {
-        if (droppedBasket) {
-          spawnRollingApples(droppedBasket.x, droppedBasket.y + 8);
-        }
-      }, 4000);
-
       // フェーズ5: スコア半減 → 落ち込みアニメ終了
       setTimeout(() => {
+        if (player.praisePhase !== 3) return;
         const lost = Math.floor(score / 2);
         score = Math.max(0, score - lost);
         updateScoreDisplay();
         showEffect(`💔 -${lost}点！`, '#ff6666');
         log.innerHTML = `かごを落とした！<span style="color:#ff8888"> -${lost}点…「かご」と言って拾って！</span>`;
         player.praisePhase = 0;
-        player.dropTimer = 60; // 落ち込みポーズをあと1秒
-      }, 4300);
+        player.dropTimer = 60;
+      }, 4800);
     });
 
   } else if (isFinal && text.trim()) {
