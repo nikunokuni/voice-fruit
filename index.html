@@ -801,7 +801,7 @@ function handleCommand(text, isFinal) {
   const log = document.getElementById('voice-log');
 
   // ── みぎ → 右に移動し続ける ──
-  if (/みぎ|ミギ|右/i.test(text)) {
+      if (/^(みぎ|ミギ|右)/.test(text)) {
     tryCmd('migi', () => {
       player.moveDir = 1; player.facing = 1;
       if (player.onGround) setAnim('walk');
@@ -809,7 +809,7 @@ function handleCommand(text, isFinal) {
     });
 
   // ── ひだり → 左に移動し続ける ──
-  } else if (/ひだり|ヒダリ|左/i.test(text)) {
+ } else if (/^(ひだり|ヒダリ|左)/.test(text)) {
     tryCmd('hidari', () => {
       player.moveDir = -1; player.facing = -1;
       if (player.onGround) setAnim('walk');
