@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@700&family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
+
+/* ── リセット ─────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ── ボディ ───────────────────────────────────── */
+body {
+  background: #1a0a2e;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 星空の背景 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 60%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 25%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 80%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 40%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 20% 90%, #fff 0%, transparent 100%),
+    radial-gradient(2px 2px at 90% 10%, #ffeb99 0%, transparent 100%),
+    radial-gradient(2px 2px at 45% 70%, #ffeb99 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── 上部 UI バー ────────────────────────────── */
+#ui-top {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: rgba(10, 5, 30, 0.8);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid rgba(255, 200, 100, 0.3);
+  z-index: 100;
+}
+
+#score-display {
+  font-family: 'Kaisei Decol', serif;
+  font-size: 28px;
+  color: #ffd700;
+  text-shadow: 0 0 20px #ffa500;
+  letter-spacing: 2px;
+}
+#lives-display { font-size: 26px; letter-spacing: 4px; }
+#timer-display  { font-size: 16px; color: #aaa; font-weight: 700; }
+
+/* ── ゲームキャンバス枠 ──────────────────────── */
+#game-canvas-wrapper {
+  position: relative;
+  width: 600px;
+  height: 480px;
+  margin-top: 60px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 3px solid rgba(255, 200, 100, 0.4);
+  box-shadow:
+    0 0 60px rgba(255, 150, 50, 0.2),
+    inset 0 0 40px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+#game-canvas { width: 100%; height: 100%; display: block; }
+
+/* ── 音声パネル ───────────────────────────────── */
+#voice-panel {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(10, 5, 30, 0.85);
+  backdrop-filter: blur(8px);
+  border-top: 2px solid rgba(255, 200, 100, 0.3);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 100;
+}
+
+#mic-btn {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  border: 3px solid #ff6b6b;
+  background: rgba(255, 80, 80, 0.15);
+  cursor: pointer;
+  font-size: 22px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+#mic-btn.listening {
+  background: rgba(255, 80, 80, 0.4);
+  border-color: #ff3030;
+  box-shadow: 0 0 20px #ff3030;
+  animation: pulse-mic 1s infinite;
+}
+@keyframes pulse-mic {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.08); }
+}
+
+#voice-log { flex: 1; font-size: 14px; color: #ccc; min-height: 20px; }
+#voice-log span { color: #ffd700; font-weight: 700; }
+
+#commands-hint { font-size: 11px; color: #888; text-align: right; line-height: 1.7; }
+
+/* ── スクリーンオーバーレイ（スタート / ゲームオーバー） ── */
+.screen-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 3, 20, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 200;
+  border-radius: 13px;
+}
+.screen-overlay h1 {
+  font-family: 'Kaisei Decol', serif;
+  font-size: 36px;
+  color: #ffd700;
+  text-shadow: 0 0 30px #ffa500;
+}
+.screen-overlay p {
+  font-size: 14px;
+  color: #bbb;
+  text-align: center;
+  line-height: 2;
+  max-width: 400px;
+}
+.screen-overlay button {
+  margin-top: 10px;
+  padding: 12px 36px;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: #1a0a2e;
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255, 150, 0, 0.5);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.screen-overlay button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 30px rgba(255, 150, 0, 0.7);
+}
+
+/* ── エフェクトメッセージ（＋◯点 など） ──────── */
+#effect-msg {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Kaisei Decol', serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 20px currentColor;
+  pointer-events: none;
+  z-index: 300;
+  opacity: 0;
+  white-space: nowrap;
+}
