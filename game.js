@@ -404,19 +404,19 @@ function calcAnimPose() {
       // 振り子は遷移完了後に開始
       const swing = ps >= 1 ? Math.sin(p.praiseTimer * 0.15) * 5 : 0;
 
-      armAngR  = deg(ease * -30);          // 0 → 右腕を上に30°
-      elbowR   = deg(ease * 20 + swing);   // 0 → 20°、完了後±5°振り子
-      armAngL  = deg(ease * 40);           // 0 → 左腕を下に40°
-      elbowL   = deg(ease * 30);           // 0 → 30°
+      armAngL  = deg(ease * -30);          // 0 → 右腕を上に30°
+      elbowL   = deg(ease * 20 + swing);   // 0 → 20°、完了後±5°振り子
+      armAngR  = deg(ease * 40);           // 0 → 左腕を下に40°
+      elbowR   = deg(ease * 30);           // 0 → 30°
       break;
     }
     case 'drop': {
       // scratchポーズをキープ＋右ひじ振り子継続
       const swing = Math.sin(p.praiseTimer * 0.15) * 5;
-      armAngR  = deg(-30);
-      elbowR   = deg(20 + swing);
-      armAngL  = deg(40);
-      elbowL   = deg(30);
+      armAngL  = deg(-30);
+      elbowL   = deg(20 + swing);
+      armAngR  = deg(40);
+      elbowR   = deg(30);
       break;
     }
     case 'pickup': {
