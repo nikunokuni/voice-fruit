@@ -549,23 +549,15 @@ ctx.strokeStyle = '#ffaaaa';
 ctx.lineCap = 'round';
 ctx.lineWidth = 7;
 
-ctx.beginPath();
-
-// 1. スタート地点（左端）
-ctx.moveTo(-3, -55);
-
 // 2. 上側のライン（緩やかに下にへこむカーブ）
 // 制御点(0, -45)を通る弧
-ctx.quadraticCurveTo(0, -52, 3, -55); 
+ ctx.arc(0, fy - 1, 5, 0.1, Math.PI - 0.1); ctx.stroke();
 
 // 3. 下側のライン（大きく下にふくらむカーブ）
 // 制御点(0, -35)を通る弧で左端に戻る
-ctx.quadraticCurveTo(0, -45, 3, -55); 
+ ctx.arc(0, fy - 1, 7, 0.1, Math.PI - 0.1); ctx.stroke();
 
-ctx.closePath(); // スタート地点と繋ぐ
 
-ctx.stroke();    // 枠線だけにする場合
-ctx.restore();
 
 ctx.restore();
 }
