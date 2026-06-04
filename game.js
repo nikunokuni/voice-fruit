@@ -552,15 +552,15 @@ ctx.lineWidth = 7;
 ctx.beginPath();
 
 // 1. スタート地点（左端）
-ctx.moveTo(-3, -40);
+ctx.moveTo(-3, -55);
 
 // 2. 上側のライン（緩やかに下にへこむカーブ）
 // 制御点(0, -45)を通る弧
-ctx.quadraticCurveTo(0, -35, 3, -40); 
+ctx.quadraticCurveTo(0, -52, 3, -55); 
 
 // 3. 下側のライン（大きく下にふくらむカーブ）
 // 制御点(0, -35)を通る弧で左端に戻る
-ctx.quadraticCurveTo(0, -35, 3, -40); 
+ctx.quadraticCurveTo(0, -45, 3, -55); 
 
 ctx.closePath(); // スタート地点と繋ぐ
 
