@@ -405,7 +405,7 @@ function calcAnimPose() {
       const swing = ps >= 1 ? Math.sin(p.praiseTimer * 0.15) * 10 : 0;
 
       armAngL  = deg(ease * -130);          // 0 → 右腕を上に130°
-      elbowL   = deg(ease * 150 + swing);   // 0 → 150°、完了後±10°振り子
+      elbowL   = deg(ease * -150 + swing);   // 0 → 150°、完了後±10°振り子
       armAngR  = deg(ease * 70);           // 0 → 左腕を下に40°
       elbowR   = deg(ease * 130);           // 0 → 30°
       break;
@@ -414,7 +414,7 @@ function calcAnimPose() {
       // scratchポーズをキープ＋右ひじ振り子継続
       const swing = Math.sin(p.praiseTimer * 0.15) * 5;
       armAngL  = deg(-130);
-      elbowL   = deg(150 + swing);
+      elbowL   = deg(-150 + swing);
       armAngR  = deg(70);
       elbowR   = deg(130);
       break;
