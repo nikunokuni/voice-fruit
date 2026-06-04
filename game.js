@@ -399,25 +399,24 @@ function calcAnimPose() {
       break;
     }
     case 'scratch': {
-      // 2秒（120フレーム）かけてドヤポーズへ遷移
-      const ps = Math.min(p.praiseTimer / 120, 1);
-      const ease = ps < 0.5 ? 2*ps*ps : -1+(4-2*ps)*ps; // easeInOut
-      // 右手を頭上へ（ドヤ！）
-      armAngR  = deg(20  + ease * (-150 - 20));   // 20 → -130
-      elbowR   = deg(-20 + ease * (60  + 20));    // -20 → 40
-      // 左手は脇に下げたまま
-      armAngL  = deg(20  + ease * (40  - 20));    // 20 → 40
-      elbowL   = deg(15  + ease * (10  - 15));    // 15 → 10
-      bodyLean = ease * 8;                         // 少し仰け反る
+      const ps   = Math.min(p.praiseTimer / 120, 1);
+      const ease = ps < 0.5 ? 2*ps*ps : -1+(4-2*ps)*ps;
+      // 振り子は遷移完了後に開始
+      const swing = ps >= 1 ? Math.sin(p.praiseTimer * 0.15) * 5 : 0;
+
+      armAngR  = deg(ease * -30);          // 0 → 右腕を上に30°
+      elbowR   = deg(ease * 20 + swing);   // 0 → 20°、完了後±5°振り子
+      armAngL  = deg(ease * 40);           // 0 → 左腕を下に40°
+      elbowL   = deg(ease * 30);           // 0 → 30°
       break;
-    }    
+    }
     case 'drop': {
-      // scratchポーズ（ドヤ）をキープしたまま静止
-      armAngR  = deg(-130);  elbowR = deg(40);
-      armAngL  = deg(40);    elbowL = deg(10);
-      bodyLean = 8;
-      thighAngL = deg(0);  kneeL = deg(5);
-      thighAngR = deg(0);  kneeR = deg(5);
+      // scratchポーズをキープ＋右ひじ振り子継続
+      const swing = Math.sin(p.praiseTimer * 0.15) * 5;
+      armAngR  = deg(-30);
+      elbowR   = deg(20 + swing);
+      armAngL  = deg(40);
+      elbowL   = deg(30);
       break;
     }
     case 'pickup': {
