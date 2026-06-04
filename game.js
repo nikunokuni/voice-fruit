@@ -530,6 +530,10 @@ function drawEmbarrassedFace() {
    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;   ctx.beginPath(); ctx.moveTo(-7,-65); ctx.quadraticCurveTo(-4,-68,-1,-65); ctx.stroke();   ctx.beginPath(); ctx.moveTo( 7,-65); ctx.quadraticCurveTo( 4,-68, 1,-65); ctx.stroke(); 
    ctx.strokeStyle = '#ffaaaa'; ctx.lineWidth = 2;   ctx.beginPath(); ctx.moveTo(-5,-53); ctx.quadraticCurveTo(0,-50,5,-53); ctx.stroke();
 
+  ctx.font = '22px serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(100,200,255,0.9)';
+  ctx.fillText('💕', 18, -72);
 /**
  * 笑顔を描画
  * @param {number} animTimer - アニメーションタイマー
