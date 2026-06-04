@@ -519,6 +519,7 @@ function drawPlayer() {
 function drawEmbarrassedFace() {
   const p = player;
   const blushStrength = p.anim === 'scratch'
+  const fy = -62
     ? 0.85 + Math.sin(p.praiseTimer * 0.2) * 0.1
     : 0.5 + Math.sin(p.praiseTimer * 0.15) * 0.2;
 
@@ -549,16 +550,19 @@ ctx.strokeStyle = '#ffaaaa';
 ctx.lineCap = 'round';
 ctx.lineWidth = 7;
 
-// 2. 上側のライン（緩やかに下にへこむカーブ）
-// 制御点(0, -45)を通る弧
- ctx.arc(0, fy - 1, 5, 0.1, Math.PI - 0.1); ctx.stroke();
+ctx.beginPath(); // ★ここからパスを開始
 
-// 3. 下側のライン（大きく下にふくらむカーブ）
-// 制御点(0, -35)を通る弧で左端に戻る
- ctx.arc(0, fy - 1, 7, 0.1, Math.PI - 0.1); ctx.stroke();
+// 始点（左端）
+ctx.moveTo(-7, fy); 
 
+// ベジェ曲線で「豆の形」を一度に描く
+// 制御点を使って上側と下側のカーブを表現
+ctx.bezierCurveTo(-3, fy - 6, 3, fy - 6, 7, fy); // 上側
+ctx.bezierCurveTo(3, fy + 4, -3, fy + 4, -7, fy); // 下側
 
+ctx.closePath(); // 始点と終点を閉じる
 
+ctx.stroke(); // ★最後に一度だけ描画する
 ctx.restore();
 }
   
