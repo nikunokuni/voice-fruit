@@ -399,20 +399,25 @@ function calcAnimPose() {
       break;
     }
     case 'scratch': {
-      const swing = Math.sin(p.praiseTimer * 0.22) * 14;
-      bodyLean  = Math.sin(p.praiseTimer * 0.08) * 4;
-      armAngR  = deg(-145 + swing);
-      elbowR   = deg(80 + swing * 0.5);
-      armAngL  = deg(20);  elbowL = deg(15);
+      // 2秒（120フレーム）かけてドヤポーズへ遷移
+      const ps = Math.min(p.praiseTimer / 120, 1);
+      const ease = ps < 0.5 ? 2*ps*ps : -1+(4-2*ps)*ps; // easeInOut
+      // 右手を頭上へ（ドヤ！）
+      armAngR  = deg(20  + ease * (-150 - 20));   // 20 → -130
+      elbowR   = deg(-20 + ease * (60  + 20));    // -20 → 40
+      // 左手は脇に下げたまま
+      armAngL  = deg(20  + ease * (40  - 20));    // 20 → 40
+      elbowL   = deg(15  + ease * (10  - 15));    // 15 → 10
+      bodyLean = ease * 8;                         // 少し仰け反る
       break;
-    }
+    }    
     case 'drop': {
-      const w = Math.sin(p.praiseTimer * 0.12);
-      bodyLean  = -15 + w * 5;
-      armAngL  = deg(40 + w * 10);  elbowL = deg(20);
-      armAngR  = deg(40 - w * 10);  elbowR = deg(20);
-      thighAngL = deg(10);  kneeL = deg(-15);
-      thighAngR = deg(-10); kneeR = deg(-15);
+      // scratchポーズ（ドヤ）をキープしたまま静止
+      armAngR  = deg(-130);  elbowR = deg(40);
+      armAngL  = deg(40);    elbowL = deg(10);
+      bodyLean = 8;
+      thighAngL = deg(0);  kneeL = deg(5);
+      thighAngR = deg(0);  kneeR = deg(5);
       break;
     }
     case 'pickup': {
