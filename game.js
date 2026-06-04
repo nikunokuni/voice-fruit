@@ -406,7 +406,7 @@ function calcAnimPose() {
 
       armAngL  = deg(ease * -120);          // 0 → 右腕を上に130°
       elbowL   = deg(ease * -110 + swing);   // 0 → 150°、完了後±10°振り子
-      armAngR  = deg(ease * 70);           // 0 → 左腕を下に40°
+      armAngR  = deg(ease * 60);           // 0 → 左腕を下に40°
       elbowR   = deg(ease * -130);           // 0 → 30°
       break;
     }
@@ -415,7 +415,7 @@ function calcAnimPose() {
       const swing = Math.sin(p.praiseTimer * 0.15) * 5;
       armAngL  = deg(-120);
       elbowL   = deg(-110 + swing);
-      armAngR  = deg(70);
+      armAngR  = deg(60);
       elbowR   = deg(-130);
       break;
     }
