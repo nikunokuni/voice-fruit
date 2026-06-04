@@ -552,30 +552,20 @@ ctx.lineWidth = 7;
 ctx.beginPath();
 
 // 1. スタート地点（左端）
-ctx.moveTo(-3, -80);
+ctx.moveTo(-3, -40);
 
 // 2. 上側のライン（緩やかに下にへこむカーブ）
 // 制御点(0, -45)を通る弧
-ctx.quadraticCurveTo(0, -85, 3, -80); 
+ctx.quadraticCurveTo(0, -35, 3, -40); 
 
 // 3. 下側のライン（大きく下にふくらむカーブ）
 // 制御点(0, -35)を通る弧で左端に戻る
-ctx.quadraticCurveTo(0, -85, 3, -80); 
+ctx.quadraticCurveTo(0, -35, 3, -40); 
 
 ctx.closePath(); // スタート地点と繋ぐ
 
 ctx.stroke();    // 枠線だけにする場合
-// ctx.fill();   // 塗りつぶしたい場合はこれを入れる
 ctx.restore();
-
-ctx.restore();
-
-// 楕円を少し回転させて傾きをつける
-ctx.translate(0, -51);    // 口の位置（顔の下部）
-ctx.rotate(0.2);           // 少し右上がりに傾ける
-ctx.beginPath();
-ctx.ellipse(0, 0, 6, 3.5, 0, 0, Math.PI * 2);  // 横長の楕円
-ctx.fill();
 
 ctx.restore();
 }
