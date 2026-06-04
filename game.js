@@ -413,8 +413,8 @@ function calcAnimPose() {
     case 'drop': {
       // scratchポーズをキープ＋右ひじ振り子継続
       const swing = Math.sin(p.praiseTimer * 0.15) * 5;
-      armAngL  = deg(-130);
-      elbowL   = deg(-150 + swing);
+      armAngL  = deg(-120);
+      elbowL   = deg(-110 + swing);
       armAngR  = deg(70);
       elbowR   = deg(-130);
       break;
