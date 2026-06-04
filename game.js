@@ -528,7 +528,20 @@ function drawEmbarrassedFace() {
   ctx.beginPath(); ctx.arc( 9, -58, 5, 0, Math.PI * 2); ctx.fill();
 
    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;   ctx.beginPath(); ctx.moveTo(-7,-65); ctx.quadraticCurveTo(-4,-68,-1,-65); ctx.stroke();   ctx.beginPath(); ctx.moveTo( 7,-65); ctx.quadraticCurveTo( 4,-68, 1,-65); ctx.stroke(); 
-   ctx.strokeStyle = '#ffaaaa'; ctx.lineWidth = 2;   ctx.beginPath(); ctx.moveTo(-5,-53); ctx.quadraticCurveTo(0,-50,5,-53); ctx.stroke();
+  // 照れた口（斜めに傾いた楕円形）
+ctx.save();
+ctx.strokeStyle = '#ffaaaa';
+ctx.fillStyle = '#ffaaaa';
+ctx.lineWidth = 1.5;
+
+// 楕円を少し回転させて傾きをつける
+ctx.translate(0, -51);    // 口の位置（顔の下部）
+ctx.rotate(0.2);           // 少し右上がりに傾ける
+ctx.beginPath();
+ctx.ellipse(0, 0, 6, 3.5, 0, 0, Math.PI * 2);  // 横長の楕円
+ctx.fill();
+
+ctx.restore();
 
   ctx.font = '22px serif';
   ctx.textAlign = 'center';
