@@ -526,8 +526,23 @@ function drawEmbarrassedFace() {
   ctx.fillStyle = `rgba(255,80,80,${blushStrength})`;
   ctx.beginPath(); ctx.arc(-9, -58, 5, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.arc( 9, -58, 5, 0, Math.PI * 2); ctx.fill();
+//パーティクル
+  ctx.font = '22px serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(100,200,255,0.9)';
+  ctx.fillText('💕', 18, -72);
+//眉
+  ctx.strokeStyle = '#fff'; 
+  ctx.lineWidth = 2.5;   
+  ctx.beginPath(); 
+  ctx.moveTo(-7,-65); 
+  ctx.quadraticCurveTo(-4,-68,-1,-65); 
+  ctx.stroke();   
+  ctx.beginPath(); 
+  ctx.moveTo( 7,-65); 
+  ctx.quadraticCurveTo( 4,-68, 1,-65); 
+  ctx.stroke(); 
 
-   ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;   ctx.beginPath(); ctx.moveTo(-7,-65); ctx.quadraticCurveTo(-4,-68,-1,-65); ctx.stroke();   ctx.beginPath(); ctx.moveTo( 7,-65); ctx.quadraticCurveTo( 4,-68, 1,-65); ctx.stroke(); 
   // 照れた口（斜めに傾いた楕円形）
 ctx.save();
 ctx.strokeStyle = '#ffaaaa';
@@ -543,10 +558,7 @@ ctx.fill();
 
 ctx.restore();
 
-  ctx.font = '22px serif';
-  ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(100,200,255,0.9)';
-  ctx.fillText('💕', 18, -72);
+  
 /**
  * 笑顔を描画
  * @param {number} animTimer - アニメーションタイマー
