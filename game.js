@@ -546,8 +546,16 @@ function drawEmbarrassedFace() {
   // 照れた口（斜めに傾いた楕円形）
 ctx.save();
 ctx.strokeStyle = '#ffaaaa';
-ctx.fillStyle = '#ffaaaa';
-ctx.lineWidth = 1.5;
+ctx.lineCap = 'round';   // 両端を丸くする（ウインナーの先端）
+ctx.lineWidth = 7;        // 太さでウインナーの「厚み」を表現
+
+ctx.beginPath();
+// 少し傾いた弧：始点→制御点→終点
+ctx.moveTo(-6, -51);
+ctx.quadraticCurveTo(0, -46, 6, -49);  // 下にふくらむ短い弧
+ctx.stroke();
+
+ctx.restore();
 
 // 楕円を少し回転させて傾きをつける
 ctx.translate(0, -51);    // 口の位置（顔の下部）
