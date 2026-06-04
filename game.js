@@ -518,8 +518,8 @@ function drawPlayer() {
 /** 照れ顔を描画 */
 function drawEmbarrassedFace() {
   const p = player;
-  const blushStrength = p.anim === 'scratch'
   const fy = -62
+  const blushStrength = p.anim === 'scratch'
     ? 0.85 + Math.sin(p.praiseTimer * 0.2) * 0.1
     : 0.5 + Math.sin(p.praiseTimer * 0.15) * 0.2;
 
