@@ -474,7 +474,7 @@ function drawPlayer() {
   // かごを両手で持つ
   if (p.hasBasket && p.anim !== 'drop' && p.anim !== 'scratch') {
     const midX = (leftTip.x + rightTip.x) / 2;
-    const midY = (leftTip.y + rightTip.y) / 2 - 10;
+    const midY = (leftTip.y + rightTip.y) / 2 - 28;
     ctx.save();
     ctx.strokeStyle = '#c8a87a'; ctx.lineWidth = 1.8; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(leftTip.x,  leftTip.y);  ctx.lineTo(midX - 10, midY); ctx.stroke();
@@ -701,7 +701,7 @@ function updateFruits() {
       player.hasBasket &&
       player.anim !== 'drop' &&
       Math.abs(f.x - player.x)          < BASKET_CATCH_W &&
-      Math.abs(f.y - (player.y - 30))   < 38;
+      Math.abs(f.y - (player.y - 48))   < 38;
 
     if (caught) {
       state.score++;
