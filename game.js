@@ -524,14 +524,8 @@ function drawEmbarrassedFace() {
 
   // 頬赤み
   ctx.fillStyle = `rgba(255,80,80,${blushStrength})`;
-  ctx.beginPath(); ctx.arc(-9, -58, 7, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc( 9, -58, 7, 0, Math.PI * 2); ctx.fill();
-
-  // 汗マーク
-  ctx.font = '10px serif';
-  ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(100,200,255,0.9)';
-  ctx.fillText('💦', 18, -72);
+  ctx.beginPath(); ctx.arc(-9, -58, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc( 9, -58, 5, 0, Math.PI * 2); ctx.fill();
 
   // 困り眉
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;
