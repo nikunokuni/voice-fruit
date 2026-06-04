@@ -402,12 +402,12 @@ function calcAnimPose() {
       const ps   = Math.min(p.praiseTimer / 120, 1);
       const ease = ps < 0.5 ? 2*ps*ps : -1+(4-2*ps)*ps;
       // 振り子は遷移完了後に開始
-      const swing = ps >= 1 ? Math.sin(p.praiseTimer * 0.15) * 5 : 0;
+      const swing = ps >= 1 ? Math.sin(p.praiseTimer * 0.15) * 10 : 0;
 
-      armAngL  = deg(ease * -30);          // 0 → 右腕を上に30°
-      elbowL   = deg(ease * 20 + swing);   // 0 → 20°、完了後±5°振り子
-      armAngR  = deg(ease * 40);           // 0 → 左腕を下に40°
-      elbowR   = deg(ease * 30);           // 0 → 30°
+      armAngL  = deg(ease * -130);          // 0 → 右腕を上に130°
+      elbowL   = deg(ease * 150 + swing);   // 0 → 150°、完了後±10°振り子
+      armAngR  = deg(ease * 70);           // 0 → 左腕を下に40°
+      elbowR   = deg(ease * 130);           // 0 → 30°
       break;
     }
     case 'drop': {
