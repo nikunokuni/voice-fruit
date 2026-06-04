@@ -546,9 +546,9 @@ function drawEmbarrassedFace() {
 
 // 照れた口（豆のような形）
 ctx.save();
-ctx.strokeStyle = '#ffaaaa';
+ctx.strokeStyle = '#fff';
 ctx.lineCap = 'round';
-ctx.lineWidth = 7;
+ctx.lineWidth = 2.5;
 
 ctx.beginPath(); // ★ここからパスを開始
 
