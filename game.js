@@ -557,7 +557,7 @@ ctx.ellipse(0, 0, 6, 3.5, 0, 0, Math.PI * 2);  // 横長の楕円
 ctx.fill();
 
 ctx.restore();
-
+}
   
 /**
  * 笑顔を描画
