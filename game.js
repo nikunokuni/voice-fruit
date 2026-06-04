@@ -543,17 +543,30 @@ function drawEmbarrassedFace() {
   ctx.quadraticCurveTo( 4,-68, 1,-65); 
   ctx.stroke(); 
 
-  // 照れた口（斜めに傾いた楕円形）
+// 照れた口（豆のような形）
 ctx.save();
 ctx.strokeStyle = '#ffaaaa';
-ctx.lineCap = 'round';   // 両端を丸くする（ウインナーの先端）
-ctx.lineWidth = 7;        // 太さでウインナーの「厚み」を表現
+ctx.lineCap = 'round';
+ctx.lineWidth = 7;
 
 ctx.beginPath();
-// 少し傾いた弧：始点→制御点→終点
-ctx.moveTo(-6, -51);
-ctx.quadraticCurveTo(0, -46, 6, -49);  // 下にふくらむ短い弧
-ctx.stroke();
+
+// 1. スタート地点（左端）
+ctx.moveTo(-10, -50);
+
+// 2. 上側のライン（緩やかに下にへこむカーブ）
+// 制御点(0, -45)を通る弧
+ctx.quadraticCurveTo(0, -45, 10, -50); 
+
+// 3. 下側のライン（大きく下にふくらむカーブ）
+// 制御点(0, -35)を通る弧で左端に戻る
+ctx.quadraticCurveTo(0, -35, -10, -50); 
+
+ctx.closePath(); // スタート地点と繋ぐ
+
+ctx.stroke();    // 枠線だけにする場合
+// ctx.fill();   // 塗りつぶしたい場合はこれを入れる
+ctx.restore();
 
 ctx.restore();
 
