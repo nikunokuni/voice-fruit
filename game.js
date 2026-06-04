@@ -527,31 +527,8 @@ function drawEmbarrassedFace() {
   ctx.beginPath(); ctx.arc(-9, -58, 5, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.arc( 9, -58, 5, 0, Math.PI * 2); ctx.fill();
 
- // 照れ眉（への字 → 笑って細くなった目のような眉）
-ctx.strokeStyle = '#fff';
-ctx.lineWidth = 2.5;
-
-// 左眉：外側が上がる弧
-ctx.beginPath();
-ctx.moveTo(-9, -67);
-ctx.quadraticCurveTo(-4, -71, 1, -67);
-ctx.stroke();
-
-// 右眉：外側が上がる弧
-ctx.beginPath();
-ctx.moveTo(9, -67);
-ctx.quadraticCurveTo(4, -71, -1, -67);
-ctx.stroke();
-
-// 照れ口（大きく開いた上向き笑顔）
-ctx.strokeStyle = '#ffaaaa';
-ctx.lineWidth = 2;
-
-ctx.beginPath();
-ctx.moveTo(-8, -53);
-ctx.quadraticCurveTo(0, -44, 8, -53);
-ctx.stroke();
-}
+   ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5;   ctx.beginPath(); ctx.moveTo(-7,-65); ctx.quadraticCurveTo(-4,-68,-1,-65); ctx.stroke();   ctx.beginPath(); ctx.moveTo( 7,-65); ctx.quadraticCurveTo( 4,-68, 1,-65); ctx.stroke(); 
+   ctx.strokeStyle = '#ffaaaa'; ctx.lineWidth = 2;   ctx.beginPath(); ctx.moveTo(-5,-53); ctx.quadraticCurveTo(0,-50,5,-53); ctx.stroke();
 
 /**
  * 笑顔を描画
