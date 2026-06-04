@@ -551,17 +551,13 @@ ctx.lineCap = 'round';
 ctx.lineWidth = 2.5;
 
 ctx.beginPath(); // ★ここからパスを開始
-
-// 始点（左端）
-ctx.moveTo(-7, fy); 
+ctx.moveTo(-7, -55); 
 
 // ベジェ曲線で「豆の形」を一度に描く
 // 制御点を使って上側と下側のカーブを表現
-ctx.bezierCurveTo(-3, fy - 6, 3, fy - 6, 7, fy); // 上側
-ctx.bezierCurveTo(3, fy + 4, -3, fy + 4, -7, fy); // 下側
-
+ctx.bezierCurveTo(-3,-50 , 3, -50, 7, -55); // 上側
+ctx.bezierCurveTo(3, -45, -3, -45, -7, -55); // 下側
 ctx.closePath(); // 始点と終点を閉じる
-
 ctx.stroke(); // ★最後に一度だけ描画する
 ctx.restore();
 }
