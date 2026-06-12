@@ -61,8 +61,8 @@ body::before {
 /* ── ゲームキャンバス枠 ──────────────────────── */
 #game-canvas-wrapper {
   position: relative;
-  width: 600px;
-  height: 480px;
+  width: min(600px, 94vw, calc(70vh * 1.25));
+  aspect-ratio: 600 / 480;
   margin-top: 60px;
   border-radius: 16px;
   overflow: hidden;
@@ -175,4 +175,49 @@ body::before {
   z-index: 300;
   opacity: 0;
   white-space: nowrap;
+}
+
+/* ── スマホ向け調整 ───────────────────────────── */
+@media (max-width: 640px) {
+  #ui-top {
+    padding: 8px 12px;
+  }
+  #score-display { font-size: 18px; }
+  #lives-display { font-size: 18px; letter-spacing: 2px; }
+  #timer-display { font-size: 11px; }
+
+  #game-canvas-wrapper {
+    width: min(600px, 98vw, calc(65vh * 1.25));
+    margin-top: 46px;
+  }
+
+  #voice-panel {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  #mic-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+  #voice-log { font-size: 12px; }
+  #commands-hint { font-size: 9px; line-height: 1.5; }
+
+  .screen-overlay h1 { font-size: 24px; }
+  .screen-overlay p {
+    font-size: 12px;
+    line-height: 1.7;
+    max-width: 90%;
+  }
+  .screen-overlay button {
+    padding: 10px 28px;
+    font-size: 16px;
+  }
+
+  #effect-msg { font-size: 24px; }
+}
+
+/* ── 横幅が極端に狭い端末ではコマンドヒントを省略 ── */
+@media (max-width: 380px) {
+  #commands-hint { display: none; }
 }

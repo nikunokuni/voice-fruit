@@ -995,6 +995,15 @@ let recognition = null;
 let isListening = false;
 let lastInterimText = '';
 
+// マイク権限拒否やデバイス未接続など、自動再開しても無駄なエラー
+const FATAL_SPEECH_ERRORS = new Set(['not-allowed', 'service-not-allowed', 'audio-capture']);
+
+const FATAL_SPEECH_ERROR_MESSAGES = {
+  'not-allowed': '⚠️ マイクの使用が許可されていません。ブラウザの設定でマイクを許可してください。',
+  'service-not-allowed': '⚠️ マイクの使用が許可されていません。ブラウザの設定でマイクを許可してください。',
+  'audio-capture': '⚠️ マイクが見つかりません。マイクが接続されているか確認してください。'
+};
+
 /** SpeechRecognition を初期化する */
 function initSpeechRecognition() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1033,18 +1042,54 @@ function initSpeechRecognition() {
 
   recognition.onerror = (e) => {
     if (e.error === 'no-speech' || e.error === 'aborted') return;
+
+    if (FATAL_SPEECH_ERRORS.has(e.error)) {
+      // 自動再開しても回復しないエラーなのでリスニング状態を解除する
+      isListening = false;
+      const micBtn = document.getElementById('mic-btn');
+      micBtn.classList.remove('listening');
+      micBtn.textContent = '🎤';
+      document.getElementById('voice-log').textContent =
+        FATAL_SPEECH_ERROR_MESSAGES[e.error] || `エラー: ${e.error}`;
+      return;
+    }
+
     document.getElementById('voice-log').textContent = `エラー: ${e.error}`;
   };
 
   recognition.onend = () => {
-    // 連続認識を維持する
+    // 連続認識を維持する(致命的エラーで停止した場合は再開しない)
     if (isListening) {
-      try { recognition.start(); } catch (ex) { /* ignore */ }
+      restartRecognition();
     }
   };
 
   return true;
 }
+
+/**
+ * recognition.start() を安全に呼び直す。
+ * クリック等による start() と onend からの再開が競合して
+ * InvalidStateError が出た場合は、少し待って再試行する。
+ */
+function restartRecognition() {
+  try {
+    recognition.start();
+  } catch (ex) {
+    if (ex.name === 'InvalidStateError') {
+      setTimeout(() => {
+        if (isListening) restartRecognition();
+      }, 250);
+    }
+  }
+}
+
+// タブがバックグラウンドから復帰したとき、認識が止まっていれば再開する
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && isListening && recognition) {
+    restartRecognition();
+  }
+});
 
 /** マイクボタンのクリックハンドラ */
 function onMicButtonClick() {
